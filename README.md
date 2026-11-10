@@ -3,8 +3,23 @@
 
 [![Deploy to GitHub Pages](https://github.com/Mahajanram15/Invictus_Indradhanu/actions/workflows/deploy.yml/badge.svg)](https://github.com/Mahajanram15/Invictus_Indradhanu/actions/workflows/deploy.yml)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-2D6A4F?style=flat&logo=github)](https://mahajanram15.github.io/Invictus_Indradhanu/)
+[![Farmer App](https://img.shields.io/badge/Farmer_App-Live_Demo-2D6A4F?style=flat&logo=googlechrome)](https://mahajanram15.github.io/Invictus_Indradhanu/farmer/)
 [![Backend Tests](https://img.shields.io/badge/Backend_Tests-10%20Passed-10B981?style=flat&logo=pytest)](https://github.com/Mahajanram15/Invictus_Indradhanu)
 [![API Docs](https://img.shields.io/badge/API_Docs-Swagger_UI-blue?style=flat&logo=fastapi)](http://localhost:8000/docs)
+
+---
+
+## 🔗 Live Links
+
+| Surface | Description | Link |
+|---|---|---|
+| 🖥️ **Operations Dashboard** | Web dashboard for the end-to-end advisory wizard, climate hub, farmers directory & audit history | [mahajanram15.github.io/Invictus_Indradhanu](https://mahajanram15.github.io/Invictus_Indradhanu/) |
+| 📱 **Farmer App** | The farmer-facing mobile web app — language picker, advisory, climate, risk & farm plots (currently running in demo mode with built-in sample data) | [mahajanram15.github.io/Invictus_Indradhanu/farmer](https://mahajanram15.github.io/Invictus_Indradhanu/farmer/) |
+| 💻 **Source Code** | This repository | [github.com/Mahajanram15/Invictus_Indradhanu](https://github.com/Mahajanram15/Invictus_Indradhanu) |
+
+**Scan to open the farmer app on your phone:**
+
+<img src="docs/qr-farmer-app.png" alt="QR code linking to the Indradhanu farmer app" width="180" />
 
 ---
 
