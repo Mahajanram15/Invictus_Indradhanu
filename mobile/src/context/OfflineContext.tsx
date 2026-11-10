@@ -1,7 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { SyncService } from '../services/sync';
 import { StorageService } from '../services/storage';
+
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  // NetInfo's web reachability check defaults to pinging the bare domain
+  // root, which 404s on a GitHub Pages *project* site (content only exists
+  // under /<repo>/, not at the true root) — pointing it at the current page
+  // instead guarantees a URL that actually exists.
+  NetInfo.configure({
+    reachabilityUrl: window.location.href,
+  });
+}
 
 interface OfflineContextType {
   isOnline: boolean;

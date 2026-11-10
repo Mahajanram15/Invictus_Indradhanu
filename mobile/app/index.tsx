@@ -7,6 +7,7 @@ import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import { FarmerButton } from '../src/components/FarmerButton';
 import { SupportedLanguage } from '../src/localization/translations';
+import { Config } from '../src/constants/config';
 
 const LANGUAGES: { code: SupportedLanguage; label: string; native: string; description: string }[] = [
   { code: 'mr', label: 'Marathi', native: 'मराठी', description: 'महाराष्ट्रातील शेतकऱ्यांसाठी' },
@@ -21,6 +22,10 @@ export default function WelcomeScreen() {
   const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
+    // In demo mode there's no real session to restore, so isAuthenticated is
+    // always true — don't auto-redirect away from this screen on load, or a
+    // visitor (and any refresh) would never see the language picker again.
+    if (Config.DEMO_MODE) return;
     if (!isLoading && isAuthenticated) {
       router.replace('/(tabs)');
     }
@@ -31,7 +36,8 @@ export default function WelcomeScreen() {
   };
 
   const handleContinue = () => {
-    router.push('/auth/login');
+    // No real backend to log into in demo mode — go straight into the app.
+    router.push(Config.DEMO_MODE ? '/(tabs)' : '/auth/login');
   };
 
   return (
