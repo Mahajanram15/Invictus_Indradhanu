@@ -26,18 +26,18 @@ export default function LoginScreen() {
 
   const handleAuthAction = async () => {
     if (!email.trim()) {
-      setErrorMsg('Please enter your email address');
+      setErrorMsg(t('errorEnterEmail') || 'Please enter your email address');
       return;
     }
     if (!password || password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters');
+      setErrorMsg(t('errorPasswordLength') || 'Password must be at least 6 characters');
       return;
     }
 
     if (mode === 'signup') {
       const cleaned = phoneNumber.replace(/\D/g, '');
       if (cleaned.length !== 10) {
-        setErrorMsg('Please enter a valid 10-digit mobile number for advisories');
+        setErrorMsg(t('errorValidMobile') || 'Please enter a valid 10-digit mobile number for advisories');
         return;
       }
     }
@@ -59,9 +59,9 @@ export default function LoginScreen() {
           if (errLower.includes('email not confirmed') || errLower.includes('unconfirmed')) {
             setAwaitingEmail(email.trim());
             setMode('verify-email');
-            setErrorMsg('Email address not yet confirmed. Please verify your inbox.');
+            setErrorMsg(t('errorEmailNotConfirmed') || 'Email address not yet confirmed. Please verify your inbox.');
           } else {
-            setErrorMsg(res.error || 'Login failed. Please check your credentials.');
+            setErrorMsg(res.error || t('errorLoginFailed') || 'Login failed. Please check your credentials.');
           }
         }
       } else {
@@ -81,7 +81,7 @@ export default function LoginScreen() {
             setResendStatus('');
           }
         } else {
-          setErrorMsg(res.error || 'Registration failed. Please try again.');
+          setErrorMsg(res.error || t('errorRegistrationFailed') || 'Registration failed. Please try again.');
         }
       }
     } catch (e: any) {
@@ -100,7 +100,7 @@ export default function LoginScreen() {
     try {
       const res = await resendConfirmation(awaitingEmail);
       if (res.success) {
-        setResendStatus('Verification email resent! Please check your inbox.');
+        setResendStatus(t('resendSuccessMsg') || 'Verification email resent! Please check your inbox.');
       } else {
         setErrorMsg(res.error || 'Failed to resend confirmation email.');
       }
@@ -123,15 +123,15 @@ export default function LoginScreen() {
           </View>
           <Text style={styles.title}>
             {mode === 'verify-email'
-              ? 'Verify Your Email'
+              ? t('loginVerifyTitle') || 'Verify Your Email'
               : mode === 'signin'
-              ? 'Farmer Sign In'
-              : 'Create Farm Account'}
+              ? t('loginSignInTitle') || 'Farmer Sign In'
+              : t('loginCreateTitle') || 'Create Farm Account'}
           </Text>
           <Text style={styles.subtitle}>
             {mode === 'verify-email'
-              ? 'Click the link in your email to activate your account.'
-              : 'Development Mode: Supabase email authentication is enabled.'}
+              ? t('loginVerifySubtitle') || 'Click the link in your email to activate your account.'
+              : t('loginDevNotice') || 'Development Mode: Supabase email authentication is enabled.'}
           </Text>
         </View>
 
@@ -146,7 +146,7 @@ export default function LoginScreen() {
               }}
             >
               <Text style={[styles.tabText, mode === 'signin' && styles.tabTextActive]}>
-                Sign In
+                {t('tabSignIn') || 'Sign In'}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -157,7 +157,7 @@ export default function LoginScreen() {
               }}
             >
               <Text style={[styles.tabText, mode === 'signup' && styles.tabTextActive]}>
-                Create Account
+                {t('tabCreateAccount') || 'Create Account'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -166,14 +166,14 @@ export default function LoginScreen() {
         {/* Normal Inputs (Sign In / Sign Up) */}
         {mode !== 'verify-email' ? (
           <View style={styles.inputArea}>
-            <Text style={styles.inputLabel}>Email Address *</Text>
+            <Text style={styles.inputLabel}>{t('emailAddress') || 'Email Address'} *</Text>
             <View style={styles.inputRow}>
               <Mail color={COLORS.textMuted} size={20} style={styles.inputIcon} />
               <TextInput
                 style={styles.textInput}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                placeholder="kisan@example.com"
+                placeholder={t('emailPlaceholder') || 'kisan@example.com'}
                 placeholderTextColor={COLORS.textMuted}
                 value={email}
                 onChangeText={(val) => {
@@ -183,13 +183,13 @@ export default function LoginScreen() {
               />
             </View>
 
-            <Text style={[styles.inputLabel, { marginTop: 14 }]}>Password *</Text>
+            <Text style={[styles.inputLabel, { marginTop: 14 }]}>{t('passwordLabel') || 'Password'} *</Text>
             <View style={styles.inputRow}>
               <Lock color={COLORS.textMuted} size={20} style={styles.inputIcon} />
               <TextInput
                 style={styles.textInput}
                 secureTextEntry
-                placeholder="Min 6 characters"
+                placeholder={t('passwordPlaceholder') || 'Min 6 characters'}
                 placeholderTextColor={COLORS.textMuted}
                 value={password}
                 onChangeText={(val) => {
@@ -201,7 +201,7 @@ export default function LoginScreen() {
 
             {mode === 'signup' && (
               <>
-                <Text style={[styles.inputLabel, { marginTop: 14 }]}>Contact Mobile Number *</Text>
+                <Text style={[styles.inputLabel, { marginTop: 14 }]}>{t('contactMobile') || 'Contact Mobile Number'} *</Text>
                 <View style={styles.phoneInputRow}>
                   <View style={styles.countryCodeBadge}>
                     <Text style={styles.countryCodeText}>🇮🇳 +91</Text>
@@ -220,7 +220,7 @@ export default function LoginScreen() {
                   />
                 </View>
                 <Text style={styles.helpText}>
-                  Required for SMS, Voice IVR and WhatsApp climate alert delivery.
+                  {t('mobileHelpText') || 'Required for SMS, Voice IVR and WhatsApp climate alert delivery.'}
                 </Text>
               </>
             )}
@@ -230,7 +230,7 @@ export default function LoginScreen() {
             <View style={styles.privacyNote}>
               <ShieldCheck color={COLORS.primary} size={18} />
               <Text style={styles.privacyText}>
-                Credentials are secured via Supabase Auth with encrypted tokens and session persistence.
+                {t('credentialsSecureNote') || 'Credentials are secured via Supabase Auth with encrypted tokens and session persistence.'}
               </Text>
             </View>
           </View>
@@ -238,15 +238,15 @@ export default function LoginScreen() {
           /* Awaiting Email Verification State */
           <View style={styles.verifyContainer}>
             <View style={styles.verifyCard}>
-              <Text style={styles.verifyCardTitle}>Confirmation Link Sent</Text>
+              <Text style={styles.verifyCardTitle}>{t('confirmationLinkSentTitle') || 'Confirmation Link Sent'}</Text>
               <Text style={styles.verifyCardText}>
-                We sent an activation link to:
+                {t('activationSentTo') || 'We sent an activation link to:'}
               </Text>
               <Text style={styles.verifyEmailHighlight}>{awaitingEmail}</Text>
               <Text style={styles.verifyInstructions}>
-                1. Open your email inbox{'\n'}
-                2. Tap the confirmation link{'\n'}
-                3. Return to Indradhanu and sign in with your password
+                1. {t('verifyStep1') || 'Open your email inbox'}{'\n'}
+                2. {t('verifyStep2') || 'Tap the confirmation link'}{'\n'}
+                3. {t('verifyStep3') || 'Return to Indradhanu and sign in with your password'}
               </Text>
             </View>
 
@@ -261,7 +261,7 @@ export default function LoginScreen() {
 
             <View style={{ marginTop: 16 }}>
               <FarmerButton
-                title="Proceed to Sign In"
+                title={t('proceedSignIn') || 'Proceed to Sign In'}
                 onPress={() => {
                   setEmail(awaitingEmail);
                   setMode('signin');
@@ -277,7 +277,7 @@ export default function LoginScreen() {
             >
               <RotateCw color={COLORS.primaryDark} size={16} />
               <Text style={styles.resendBtnText}>
-                {resending ? 'Sending...' : 'Resend Verification Email'}
+                {resending ? (t('resendingText') || 'Sending...') : (t('resendVerification') || 'Resend Verification Email')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -286,7 +286,7 @@ export default function LoginScreen() {
         {mode !== 'verify-email' && (
           <View style={styles.footerArea}>
             <FarmerButton
-              title={mode === 'signin' ? 'Sign In to Account' : 'Create & Continue'}
+              title={mode === 'signin' ? (t('signInButton') || 'Sign In to Account') : (t('createContinueButton') || 'Create & Continue')}
               onPress={handleAuthAction}
               loading={loading}
             />

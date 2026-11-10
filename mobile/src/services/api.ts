@@ -32,7 +32,7 @@ async function request<T>(
     const json = await response.json().catch(() => null);
 
     if (!response.ok) {
-      const errorMsg = json?.detail || `HTTP Error ${response.status}`;
+      const errorMsg = json?.detail || json?.error?.message || `HTTP Error ${response.status}`;
       return { error: errorMsg };
     }
 
@@ -42,6 +42,18 @@ async function request<T>(
       error: error.name === 'AbortError' ? 'Request timed out' : (error.message || 'Network request failed'),
     };
   }
+}
+
+// The backend's Farm model uses `name` / `acreage`; the mobile app's Farm
+// type (see AuthContext) uses `farm_name` / `size_acres`. Normalize at the
+// API boundary so the rest of the app can keep using its existing shape.
+function normalizeFarm(raw: any): any {
+  if (!raw) return raw;
+  return {
+    ...raw,
+    farm_name: raw.farm_name ?? raw.name,
+    size_acres: raw.size_acres ?? raw.acreage,
+  };
 }
 
 export const ApiService = {
@@ -58,6 +70,9 @@ export const ApiService = {
     preferred_language: string;
     phone_number?: string;
     email?: string;
+    latitude: number;
+    longitude: number;
+    farm_acreage?: number;
   }): Promise<ApiResponse<any>> {
     return request('/auth/register-farmer', {
       method: 'POST',
@@ -65,18 +80,20 @@ export const ApiService = {
         ...data,
         country: 'India',
         farm_name: 'Main Farm Plot',
-        farm_acreage: 2.5,
+        farm_acreage: data.farm_acreage ?? 2.5,
         soil_type: 'Black Cotton Soil',
         irrigation_source: 'Borewell / Drip',
-        latitude: 18.5204,
-        longitude: 73.8567,
       }),
     });
   },
 
   // Farms endpoints
   async getFarms(): Promise<ApiResponse<any[]>> {
-    return request('/farms');
+    const res = await request<any[]>('/farms/me');
+    if (res.data) {
+      return { ...res, data: res.data.map(normalizeFarm) };
+    }
+    return res;
   },
 
   async createFarm(data: {
@@ -86,10 +103,20 @@ export const ApiService = {
     size_acres: number;
     soil_type?: string;
   }): Promise<ApiResponse<any>> {
-    return request('/farms', {
+    const res = await request<any>('/farms/me', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        name: data.farm_name,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        acreage: data.size_acres,
+        soil_type: data.soil_type,
+      }),
     });
+    if (res.data) {
+      return { ...res, data: normalizeFarm(res.data) };
+    }
+    return res;
   },
 
   // Crops catalog & Farm Crops
@@ -154,9 +181,12 @@ export const ApiService = {
   },
 
   // Advisories (with Offline Cache Fallback)
-  async getLatestAdvisory(farmId: string, language?: string): Promise<ApiResponse<any>> {
-    const langParam = language ? `?language=${language}` : '';
-    const res = await request<any>(`/advisories/farms/${farmId}/latest${langParam}`);
+  async getLatestAdvisory(farmId: string, cropId?: string, language?: string): Promise<ApiResponse<any>> {
+    const params = new URLSearchParams();
+    if (cropId) params.set('crop_id', cropId);
+    if (language) params.set('language', language);
+    const qs = params.toString();
+    const res = await request<any>(`/advisories/farms/${farmId}/latest${qs ? `?${qs}` : ''}`);
     if (res.data) {
       // Cache this latest advisory for offline use
       const cached = await StorageService.getCachedAdvisories();

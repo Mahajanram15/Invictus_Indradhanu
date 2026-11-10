@@ -55,6 +55,9 @@ interface AuthContextType {
     preferred_language: string;
     phone_number?: string;
     email?: string;
+    latitude: number;
+    longitude: number;
+    farm_acreage?: number;
   }) => Promise<{ success: boolean; error?: string }>;
   refreshData: () => Promise<void>;
   logout: () => Promise<void>;
@@ -217,6 +220,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     preferred_language: string;
     phone_number?: string;
     email?: string;
+    latitude: number;
+    longitude: number;
+    farm_acreage?: number;
   }) => {
     // Idempotency guard: If farmerProfile is already set, return success
     if (farmerProfile) {

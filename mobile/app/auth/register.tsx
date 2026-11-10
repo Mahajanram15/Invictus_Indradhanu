@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { UserCheck, MapPin, Globe, Phone } from 'lucide-react-native';
+import { UserCheck, MapPin, Globe, Phone, Crosshair } from 'lucide-react-native';
 import { COLORS } from '../../src/constants/colors';
 import { useAuth } from '../../src/context/AuthContext';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { FarmerButton } from '../../src/components/FarmerButton';
+import { LocationService } from '../../src/services/location';
 import { SupportedLanguage } from '../../src/localization/translations';
 
 const LANG_OPTIONS: { code: SupportedLanguage; label: string }[] = [
@@ -26,8 +27,27 @@ export default function RegisterProfileScreen() {
   const [village, setVillage] = useState('');
   const [district, setDistrict] = useState('');
   const [state, setState] = useState('Maharashtra');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [capturingGps, setCapturingGps] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const handleCaptureGps = async () => {
+    setCapturingGps(true);
+    setErrorMsg('');
+    try {
+      const res = await LocationService.getCurrentLocation();
+      if (res.coordinates) {
+        setLatitude(res.coordinates.latitude.toString());
+        setLongitude(res.coordinates.longitude.toString());
+      } else {
+        setErrorMsg(res.error || 'Failed to capture GPS. Enter coordinates manually.');
+      }
+    } finally {
+      setCapturingGps(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!fullName.trim()) {
@@ -47,6 +67,12 @@ export default function RegisterProfileScreen() {
       setErrorMsg(t('enterDistrict') || 'Please enter your district');
       return;
     }
+    const latNum = parseFloat(latitude);
+    const lonNum = parseFloat(longitude);
+    if (isNaN(latNum) || isNaN(lonNum)) {
+      setErrorMsg(t('captureGpsPrompt') || 'Please capture your farm\'s GPS location to continue');
+      return;
+    }
 
     const formattedPhone = contactPhone.startsWith('+') ? contactPhone : `+91${contactPhone.replace(/\D/g, '')}`;
 
@@ -61,6 +87,8 @@ export default function RegisterProfileScreen() {
         district: district.trim(),
         state: state.trim(),
         preferred_language: language,
+        latitude: latNum,
+        longitude: lonNum,
       });
 
       if (res.success) {
@@ -128,6 +156,21 @@ export default function RegisterProfileScreen() {
             value={district}
             onChangeText={setDistrict}
           />
+
+          <Text style={styles.label}>{t('farmLocation') || 'Farm GPS Location (स्थान)'} *</Text>
+          <FarmerButton
+            title={capturingGps ? t('detectingGps') || 'Capturing GPS...' : t('captureGps') || '📍 Capture GPS Location'}
+            variant="secondary"
+            onPress={handleCaptureGps}
+            loading={capturingGps}
+            icon={<Crosshair color={COLORS.white} size={20} />}
+            style={{ marginVertical: 8 }}
+          />
+          {latitude && longitude ? (
+            <Text style={styles.gpsCapturedText}>
+              ✓ {parseFloat(latitude).toFixed(4)}, {parseFloat(longitude).toFixed(4)}
+            </Text>
+          ) : null}
 
           <Text style={styles.label}>{t('preferredLanguage') || 'Advisory Language'}</Text>
           <View style={styles.langGrid}>
@@ -250,6 +293,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     marginTop: 12,
+  },
+  gpsCapturedText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primaryDark,
+    marginTop: 2,
+    marginBottom: 4,
   },
   footerArea: {
     marginTop: 20,

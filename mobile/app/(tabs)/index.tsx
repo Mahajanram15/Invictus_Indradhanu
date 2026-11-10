@@ -15,7 +15,7 @@ import { FarmerButton } from '../../src/components/FarmerButton';
 export default function HomeScreen() {
   const router = useRouter();
   const { activeFarm, farms, setActiveFarm, farmerProfile } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isOnline } = useOffline();
 
   const [farmCrops, setFarmCrops] = useState<any[]>([]);
@@ -37,8 +37,8 @@ export default function HomeScreen() {
         const currentCrop = selectedCrop || cropsRes.data[0];
         setSelectedCrop(currentCrop);
 
-        // Fetch latest advisory for this crop
-        const advRes = await ApiService.getLatestAdvisory(activeFarm.id, currentCrop.id);
+        // Fetch latest advisory for this crop, in the farmer's currently selected language
+        const advRes = await ApiService.getLatestAdvisory(activeFarm.id, currentCrop.id, language);
         if (advRes.data) {
           setAdvisory(advRes.data);
           setIsCached(!!advRes.isOfflineCache);
@@ -72,7 +72,10 @@ export default function HomeScreen() {
       const res = await ApiService.generateAdvisory(
         activeFarm.id,
         selectedCrop.id,
-        farmerProfile?.preferred_language || 'mr'
+        // Prefer the app's current language selection over the farmer's
+        // registration-time preference, since the user may have switched
+        // languages since registering and expects advisories to follow.
+        language || farmerProfile?.preferred_language || 'mr'
       );
       if (res.data) {
         setAdvisory(res.data);
@@ -176,6 +179,13 @@ export default function HomeScreen() {
                 <Clock color={COLORS.textMuted} size={14} />
                 <Text style={styles.dateText}>{advisory.recommended_timing || 'Next 24h'}</Text>
               </View>
+              <TouchableOpacity
+                style={styles.regenerateBtn}
+                onPress={handleGenerateFresh}
+                disabled={loading}
+              >
+                <RefreshCw color={COLORS.primaryDark} size={16} />
+              </TouchableOpacity>
             </View>
 
             {/* Audio Voice Note Player */}
@@ -356,6 +366,12 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginLeft: 4,
     fontWeight: '600',
+  },
+  regenerateBtn: {
+    marginLeft: 8,
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: '#F0FDF4',
   },
   sectionBlock: {
     marginVertical: 8,

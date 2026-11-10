@@ -13,6 +13,7 @@ interface AudioPlayerProps {
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({ textToSpeak, label }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string>('');
   const { language, t } = useLanguage();
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ textToSpeak, label }) 
     } else {
       if (!textToSpeak) return;
       setIsLoading(true);
+      setErrorMsg('');
       try {
         await AudioService.speakText(
           textToSpeak,
@@ -39,6 +41,17 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ textToSpeak, label }) 
           () => {
             setIsPlaying(false);
             setIsLoading(false);
+            setErrorMsg(
+              t('audioUnavailableError') ||
+                'Voice playback unavailable on this device for the selected language.'
+            );
+          },
+          () => {
+            // Non-fatal: speech is still playing, just with a fallback voice.
+            setErrorMsg(
+              t('audioDegradedWarning') ||
+                'No Marathi voice found on this device — playing with the closest available voice.'
+            );
           }
         );
         setIsPlaying(true);
@@ -49,29 +62,32 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ textToSpeak, label }) 
   };
 
   return (
-    <TouchableOpacity
-      style={[styles.container, isPlaying && styles.containerPlaying]}
-      onPress={handleToggle}
-      activeOpacity={0.8}
-    >
-      <View style={[styles.iconCircle, isPlaying && styles.iconCirclePlaying]}>
-        {isLoading ? (
-          <ActivityIndicator color={COLORS.white} size="small" />
-        ) : isPlaying ? (
-          <Square color={COLORS.white} size={22} fill={COLORS.white} />
-        ) : (
-          <Volume2 color={COLORS.white} size={24} />
-        )}
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>
-          {isPlaying ? t('stopAudio') : label || t('listenAdvisory')}
-        </Text>
-        <Text style={styles.subtitle}>
-          {isPlaying ? t('playingAudio') : t('tapToListen')}
-        </Text>
-      </View>
-    </TouchableOpacity>
+    <View>
+      <TouchableOpacity
+        style={[styles.container, isPlaying && styles.containerPlaying]}
+        onPress={handleToggle}
+        activeOpacity={0.8}
+      >
+        <View style={[styles.iconCircle, isPlaying && styles.iconCirclePlaying]}>
+          {isLoading ? (
+            <ActivityIndicator color={COLORS.white} size="small" />
+          ) : isPlaying ? (
+            <Square color={COLORS.white} size={22} fill={COLORS.white} />
+          ) : (
+            <Volume2 color={COLORS.white} size={24} />
+          )}
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>
+            {isPlaying ? t('stopAudio') : label || t('listenAdvisory')}
+          </Text>
+          <Text style={styles.subtitle}>
+            {isPlaying ? t('playingAudio') : t('tapToListen')}
+          </Text>
+        </View>
+      </TouchableOpacity>
+      {errorMsg ? <Text style={styles.errorText}>⚠️ {errorMsg}</Text> : null}
+    </View>
   );
 };
 
@@ -114,6 +130,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMuted,
     marginTop: 2,
+  },
+  errorText: {
+    color: COLORS.riskCritical,
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 6,
   },
 });
 

@@ -20,7 +20,10 @@
         "NSLocationWhenInUseUsageDescription": "Indradhanu needs your farm GPS location to retrieve hyperlocal weather models and crop risk assessments.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Indradhanu uses farm GPS location to monitor weather conditions and deliver extreme weather advisories.",
         "NSMicrophoneUsageDescription": "Allows playback of spoken regional agronomic advisory voice notes.",
-        "UIBackgroundModes": ["fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -41,7 +44,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
@@ -58,7 +61,8 @@
           "icon": "./assets/notification-icon.png",
           "color": "#2D6A4F"
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true
@@ -73,4 +77,3 @@
     }
   }
 }
-

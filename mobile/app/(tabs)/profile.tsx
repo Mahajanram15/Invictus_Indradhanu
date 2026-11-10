@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User, Phone, MapPin, Award, Globe, LogOut, ShieldCheck, Database } from 'lucide-react-native';
 import { COLORS } from '../../src/constants/colors';
@@ -21,21 +21,27 @@ export default function ProfileScreen() {
   const { language, setLanguage, t } = useLanguage();
 
   const handleLogout = () => {
-    Alert.alert(
-      t('confirmLogout') || 'Confirm Logout',
-      t('logoutPrompt') || 'Are you sure you want to log out of Indradhanu?',
-      [
-        { text: t('cancel') || 'Cancel', style: 'cancel' },
-        {
-          text: t('logout') || 'Log Out',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/');
-          },
-        },
-      ]
-    );
+    const title = t('logout') || 'Log Out';
+    const message = t('logoutConfirm') || 'Are you sure you want to sign out?';
+    const doLogout = async () => {
+      await logout();
+      router.replace('/');
+    };
+
+    // react-native-web's Alert.alert() is a no-op, so the confirm dialog
+    // would otherwise never appear (and logout would silently never fire)
+    // when this screen is running on web.
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm(`${title}\n\n${message}`)) {
+        doLogout();
+      }
+      return;
+    }
+
+    Alert.alert(title, message, [
+      { text: t('cancel') || 'Cancel', style: 'cancel' },
+      { text: title, style: 'destructive', onPress: doLogout },
+    ]);
   };
 
   return (

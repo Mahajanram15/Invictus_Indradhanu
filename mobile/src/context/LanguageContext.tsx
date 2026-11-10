@@ -35,8 +35,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (langDict[key]) {
       return langDict[key];
     }
-    // Fallback to English
-    return TRANSLATIONS.en[key] || key;
+    if (TRANSLATIONS.en[key]) {
+      return TRANSLATIONS.en[key];
+    }
+    // No translation exists in any language. Return an empty string (not the
+    // raw key) so call sites using `t(key) || 'fallback text'` actually fall
+    // through to their inline fallback instead of rendering the key itself.
+    return '';
   };
 
   return (
