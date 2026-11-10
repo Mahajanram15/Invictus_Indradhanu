@@ -11,6 +11,8 @@ import { StorageService } from '../../src/services/storage';
 import { AudioPlayer } from '../../src/components/AudioPlayer';
 import { RiskBadge } from '../../src/components/RiskBadge';
 import { FarmerButton } from '../../src/components/FarmerButton';
+import { Config } from '../../src/constants/config';
+import { DEMO_FARM_CROP, DEMO_ADVISORY } from '../../src/data/demoData';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -29,6 +31,16 @@ export default function HomeScreen() {
   const loadData = async () => {
     if (!activeFarm) return;
     setLoading(true);
+
+    if (Config.DEMO_MODE) {
+      setFarmCrops([DEMO_FARM_CROP]);
+      setSelectedCrop(DEMO_FARM_CROP);
+      setAdvisory(DEMO_ADVISORY[language] || DEMO_ADVISORY.en);
+      setIsCached(false);
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
 
     try {
       const cropsRes = await ApiService.getFarmCrops(activeFarm.id);
@@ -58,7 +70,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadData();
-  }, [activeFarm]);
+  }, [activeFarm, language]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -68,6 +80,14 @@ export default function HomeScreen() {
   const handleGenerateFresh = async () => {
     if (!activeFarm || !selectedCrop) return;
     setLoading(true);
+
+    if (Config.DEMO_MODE) {
+      setAdvisory(DEMO_ADVISORY[language] || DEMO_ADVISORY.en);
+      setIsCached(false);
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await ApiService.generateAdvisory(
         activeFarm.id,

@@ -16,6 +16,11 @@ export const Config = {
   DEFAULT_LANGUAGE: 'mr',
   CACHE_TTL_MS: 3600 * 1000,
   REQUEST_TIMEOUT_MS: 15000,
+  // When true, the app runs entirely on built-in sample data instead of
+  // calling a real backend — used for the public GitHub Pages deployment,
+  // which has no live API to talk to (matching the web dashboard's own
+  // presentation-mode demo pattern).
+  DEMO_MODE: process.env.EXPO_PUBLIC_DEMO_MODE === 'true',
 };
 
 export const CONFIG = Config;

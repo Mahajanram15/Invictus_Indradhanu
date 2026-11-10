@@ -65,7 +65,8 @@
       "expo-asset"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "baseUrl": "/Invictus_Indradhanu/farmer"
     },
     "extra": {
       "router": {

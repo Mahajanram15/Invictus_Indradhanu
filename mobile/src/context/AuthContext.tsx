@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AuthService } from '../services/auth';
 import { ApiService } from '../services/api';
 import { StorageService } from '../services/storage';
+import { Config } from '../constants/config';
+import { DEMO_FARMER_PROFILE, DEMO_FARM } from '../data/demoData';
 
 export interface FarmerProfile {
   id: string;
@@ -117,6 +119,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    if (Config.DEMO_MODE) {
+      // No live backend to call — go straight in as a sample farmer.
+      setUserPhone(DEMO_FARMER_PROFILE.phone_number);
+      setFarmerProfile(DEMO_FARMER_PROFILE);
+      setFarms([DEMO_FARM]);
+      setActiveFarmState(DEMO_FARM);
+      setIsAuthenticated(true);
+      setIsLoading(false);
+      return;
+    }
+
     const initAuth = async () => {
       try {
         const session = await AuthService.getSession();

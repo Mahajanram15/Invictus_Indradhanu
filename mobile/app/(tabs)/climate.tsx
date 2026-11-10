@@ -6,6 +6,8 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { ApiService } from '../../src/services/api';
 import { WeatherCard } from '../../src/components/WeatherCard';
+import { Config } from '../../src/constants/config';
+import { DEMO_CLIMATE, DEMO_FORECAST_DAILY } from '../../src/data/demoData';
 
 export default function ClimateScreen() {
   const { activeFarm } = useAuth();
@@ -19,6 +21,20 @@ export default function ClimateScreen() {
   const loadClimateData = async () => {
     if (!activeFarm) return;
     setLoading(true);
+
+    if (Config.DEMO_MODE) {
+      setCurrentWeather({
+        temperature_c: DEMO_CLIMATE.temperature_c,
+        relative_humidity_pct: DEMO_CLIMATE.humidity_pct,
+        precipitation_probability_pct: DEMO_CLIMATE.precipitation_probability_pct,
+        wind_speed_kmh: DEMO_CLIMATE.wind_speed_kmh,
+        weather_description: 'Partly Cloudy',
+      });
+      setForecast({ daily: DEMO_FORECAST_DAILY });
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
 
     try {
       const curRes = await ApiService.getFarmClimateCurrent(activeFarm.id);

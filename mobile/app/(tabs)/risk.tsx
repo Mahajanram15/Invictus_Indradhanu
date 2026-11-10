@@ -6,6 +6,8 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useLanguage } from '../../src/context/LanguageContext';
 import { ApiService } from '../../src/services/api';
 import { RiskBadge } from '../../src/components/RiskBadge';
+import { Config } from '../../src/constants/config';
+import { DEMO_FARM_CROP } from '../../src/data/demoData';
 
 export default function RiskAssessmentScreen() {
   const { activeFarm } = useAuth();
@@ -20,6 +22,16 @@ export default function RiskAssessmentScreen() {
   const loadData = async () => {
     if (!activeFarm) return;
     setLoading(true);
+
+    if (Config.DEMO_MODE) {
+      setFarmCrops([DEMO_FARM_CROP]);
+      setSelectedCrop(DEMO_FARM_CROP);
+      // riskData stays null — the screen already falls back to sensible
+      // sample category risk scores below.
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
 
     try {
       const cropsRes = await ApiService.getFarmCrops(activeFarm.id);

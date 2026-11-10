@@ -29,11 +29,37 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Dependencies
+      - name: Install Web Dashboard Dependencies
         run: npm install
 
-      - name: Build Production Bundle
+      - name: Build Web Dashboard
         run: npm run build
+
+      - name: Install Farmer App Dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: Export Farmer App (Static Web, Demo Mode)
+        working-directory: mobile
+        env:
+          # No live backend is deployed, so the farmer app runs on built-in
+          # sample data for this public demo (same pattern as the dashboard's
+          # own Presentation Mode). Set EXPO_PUBLIC_DEMO_MODE=false as a repo
+          # variable once a real backend is deployed and EXPO_PUBLIC_API_URL
+          # is set to its public URL.
+          EXPO_PUBLIC_DEMO_MODE: ${{ vars.EXPO_PUBLIC_DEMO_MODE || 'true' }}
+          EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npx expo export --platform web
+
+      - name: Add SPA Fallback for Client-Side Routing
+        run: cp mobile/dist/index.html mobile/dist/404.html
+
+      - name: Assemble Combined Pages Site
+        run: |
+          mkdir -p dist/farmer
+          cp -r mobile/dist/. dist/farmer/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
